@@ -13,7 +13,7 @@ public class Client {
 
     String ipAddress;
     int port;
-    Socket socket;
+    static Socket socket;
     PrintWriter out;
     BufferedReader in;
 

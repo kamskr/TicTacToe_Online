@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Arrays;
 
 public class ClientWindow extends JFrame implements ActionListener {
 
@@ -75,11 +76,12 @@ public class ClientWindow extends JFrame implements ActionListener {
                 out.println("LIST");
 
                 String input = in.readLine();
-                in.readLine();
+                input = input.replaceAll(";",System.lineSeparator());
                 listAction(input);
 
             } else if (source == logoutButton) {
                 out.println("LOGOUT");
+                Client.socket.close();
                 System.exit(0);
             } else if (source == backButton){
                 loadMenu();

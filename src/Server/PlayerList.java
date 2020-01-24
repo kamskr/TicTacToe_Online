@@ -7,7 +7,7 @@ public class PlayerList {
 
     private Map<String, Player> activePlayers = new HashMap<>();
 
-    public synchronized void add(String id, Player player){
+    public void add(String id, Player player){
         activePlayers.put(id, player);
     }
 
@@ -16,10 +16,10 @@ public class PlayerList {
     }
 
     public synchronized String listAllActivePlayers(){
-        String list = "Active players: \n";
+        String list = "Active players: ;";
         for (Map.Entry<String, Player> entry : activePlayers.entrySet()) {
 
-            list += "ID: " + entry.getKey() + " || IP address: " + entry.getValue().getIpAddress() + " || port: " + entry.getValue().getPort() + "\n";
+            list += "ID: " + entry.getKey() + " || IP address: " + entry.getValue().getIpAddress() + " || port: " + entry.getValue().getPort() + ";";
         }
         return list;
 

@@ -61,8 +61,8 @@ public class Player {
                 out.println(id);
                 String line;
                 while ((line = in.readLine()) != null && !line.equals("LOGOUT")){
-
                     System.out.println(line);
+
                     if(line.equals("LIST")){
                         String list = GameServer.playerList.listAllActivePlayers();
                         out.println(list);
