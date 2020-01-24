@@ -1,6 +1,7 @@
 package Server;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -12,7 +13,9 @@ public class Player {
     private String id;
     private String ipAddress;
     private int port;
-    public volatile boolean starting = false;
+    public PrintWriter out;
+    public BufferedReader in;
+    public volatile boolean hisTurn = false;
     public volatile boolean lookingForTheGame = false;
     public volatile  boolean currentlyPlaying = false;
     public volatile Duel duel;
@@ -24,6 +27,12 @@ public class Player {
         this.id = id;
         this.ipAddress = ipAddress;
         this.port = port;
+        try {
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            out = new PrintWriter(socket.getOutputStream(), true);
+        }catch (IOException e){
+            e.printStackTrace();
+        }
         playerThread();
     }
 
@@ -45,10 +54,7 @@ public class Player {
 
     private void playerThread(){
         new Thread(()->{
-            try(
-                    BufferedReader in = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
-                    PrintWriter out = new PrintWriter(this.socket.getOutputStream(), true)
-            ){
+            try{
                 out.println(id);
                 String line;
                 while ((line = in.readLine()) != null && !line.equals("LOGOUT")){
@@ -66,9 +72,9 @@ public class Player {
                         while (!currentlyPlaying){
                             //wait
                         }
-                        System.out.println("starting for player " + id);
+                        System.out.println("Starting for player " + id);
                         out.println(opponentId);
-                        if(starting){
+                        if(hisTurn){
                             out.println("true");
                         }else{
                             out.println("false");
@@ -89,6 +95,8 @@ public class Player {
                     GameHandler.duels.remove(nDuel.get());
                 }
                 GameServer.playerList.remove(this.id);
+                in.close();
+                out.close();
                 socket.close();
             }catch (SocketException e){
                 System.out.println("INFO: Player with id: " + id + " logged out");

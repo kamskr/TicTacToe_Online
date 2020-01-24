@@ -21,6 +21,7 @@ public class GameServer {
         try {
             server = new ServerSocket(port);
             serverStarted = true;
+
         } catch (Exception e) {
             System.out.println("ERR: Couldn't start the server");
             e.printStackTrace();
@@ -41,7 +42,7 @@ public class GameServer {
                 System.out.println("INFO: New connection, player id: " + uniqueID);
 
             } catch (IOException var4) {
-                System.out.println("Accept failed");
+                System.out.println("ERR: Accept failed");
                 System.exit(-1);
             } catch (Exception e) {
                 e.printStackTrace();

@@ -4,10 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.concurrent.TimeUnit;
 
 public class Game implements ActionListener {
 
@@ -16,45 +13,47 @@ public class Game implements ActionListener {
     private boolean yourTurn;
     private String xo;
     private String[] gameState;
+    private volatile boolean gameOver = false;
+    private volatile boolean firstInit = true;
+
 //    GUI components
     JButton[] buttons = new JButton[9];
-
-    JButton button1 = new JButton("");
-    JButton button2 = new JButton("");
-    JButton button3 = new JButton("");
-    JButton button4 = new JButton("");
-    JButton button5 = new JButton("");
-    JButton button6 = new JButton("");
-    JButton button7 = new JButton("");
-    JButton button8 = new JButton("");
-    JButton button9 = new JButton("");
-
     JLabel turn = new JLabel();
 
-    public Game(ClientWindow clientWindow, String opponentId, boolean starting) {
+    public Game(ClientWindow clientWindow, String opponentId, boolean yourTurn) {
         this.opponentId = opponentId;
         this.clientWindow = clientWindow;
         this.yourTurn = yourTurn;
+        if(yourTurn){
+            this.xo = "o";
+        }else{
+            this.xo = "x";
+        }
 
         for(int i = 0; i < 9; i++){
             buttons[i] = new JButton("");
+            buttons[i].addActionListener(this);
             buttons[i].setFont(new Font("Arial", Font.PLAIN, 40));
         }
         initGame();
 
     }
+
+    private void gameLoop(){
+        new Thread(()->{
+            while (!gameOver) {
+                updateGameState();
+            }
+        }).start();
+    }
+
     private void initGame(){
         clientWindow.gamePanel.removeAll();
         clientWindow.gamePanel.setLayout(new GridLayout(3,3));
-        clientWindow.gamePanel.add(button1);
-        clientWindow.gamePanel.add(button2);
-        clientWindow.gamePanel.add(button3);
-        clientWindow.gamePanel.add(button4);
-        clientWindow.gamePanel.add(button5);
-        clientWindow.gamePanel.add(button6);
-        clientWindow.gamePanel.add(button7);
-        clientWindow.gamePanel.add(button8);
-        clientWindow.gamePanel.add(button9);
+        for(int i = 0; i < 9; i++){
+            clientWindow.gamePanel.add(buttons[i]);
+        }
+
         if(yourTurn) {
             turn = new JLabel("Your turn");
         }else {
@@ -63,7 +62,7 @@ public class Game implements ActionListener {
         JPanel turnPanel = new JPanel();
         turnPanel.add(turn);
         clientWindow.mainPanel.add(turnPanel);
-        updateGameState();
+        gameLoop();
 
         SwingUtilities.updateComponentTreeUI(clientWindow);
     }
@@ -72,24 +71,67 @@ public class Game implements ActionListener {
     public void actionPerformed(ActionEvent event) {
         Object source = event.getSource();
 
-        if(source == buttons[0]){
-            gameState[0] = xo;
+
+        for(int i = 0; i < 9; i++){
+            if(source == buttons[i] && yourTurn){
+                System.out.println("ACTION!");
+                gameState[i] = xo;
+                buttons[i].setText(xo);
+                buttons[i].removeActionListener(this);
+                sendUpdatedState();
+            }
         }
     }
 
-    private void updateGameState(){
-        try{
-            while (!clientWindow.in.ready()){
-                System.out.println("INFO: Waiting for current state of the game");
-                TimeUnit.MILLISECONDS.sleep(200);
+    private void sendUpdatedState(){
+        System.out.println("INFO: Sending updated state");
+        String state ="";
+        for(int i = 0; i < 9; i++){
+            if(i<8) {
+                state += gameState[i] + ";";
+            }else{
+                state += gameState[i];
             }
+        }
+        clientWindow.out.println(state);
+    }
+
+    private synchronized void updateGameState(){
+        try{
+            while (!clientWindow.in.ready()){}
+
             gameState = clientWindow.in.readLine().split(";");
 
-            System.out.println(gameState.toString());
+            for(int i = 0; i <9; i++){
+                buttons[i].setText(gameState[i]);
+                if(!gameState[i].equals(" ")){
+                    buttons[i].removeActionListener(this);
+                }
+            }
+
+
+
+            if(!firstInit) {
+                changeSides();
+            }else {
+                firstInit = false;
+            }
+
+            System.out.println("INFO: State updated");
         }catch (IOException e){
             e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        }
+    }
+
+    private synchronized void changeSides(){
+        yourTurn = !yourTurn;
+        if(yourTurn){
+            turn.setText("Your turn");
+            SwingUtilities.updateComponentTreeUI(clientWindow);
+
+        }else{
+            turn.setText("Your opponent's turn");
+            SwingUtilities.updateComponentTreeUI(clientWindow);
         }
     }
 }

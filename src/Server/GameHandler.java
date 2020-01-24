@@ -12,9 +12,10 @@ public class GameHandler {
     static synchronized void startDuel(Player player){
         Optional<Duel> nDuel = duels.stream().parallel().filter(duel -> !duel.isStarted()).findAny();
         if(!nDuel.isPresent() && player.lookingForTheGame){
-            duels.add(new Duel(player));
+            duels.add(new Duel(player,player.out, player.in));
         }else if(player.lookingForTheGame){
-            nDuel.get().setPlayer2(player);
+            nDuel.get().setPlayer2(player, player.out, player.in);
+
         }
     }
 
