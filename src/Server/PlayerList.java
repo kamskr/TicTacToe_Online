@@ -22,6 +22,9 @@ public class PlayerList {
             list += "ID: " + entry.getKey() + " || IP address: " + entry.getValue().getIpAddress() + " || port: " + entry.getValue().getPort() + ";";
         }
         return list;
+    }
 
+    public Map<String, Player> getActivePlayers() {
+        return activePlayers;
     }
 }

@@ -11,6 +11,8 @@ public class Player {
     private String id;
     private String ipAddress;
     private int port;
+    public boolean wantsToPlay = false;
+    public boolean currentlyPlaying = false;
 
     public Player(Socket socket, String id, String ipAddress, int port) {
         this.socket = socket;
@@ -67,6 +69,12 @@ public class Player {
                         String list = GameServer.playerList.listAllActivePlayers();
                         out.println(list);
                     }
+
+                    if(line.equals("PLAY")){
+                        System.out.println("Player (" + id + ") looking for the game");
+                        wantsToPlay = true;
+                        GameServer.gameHandler.startDuel(this);
+                    }
                 }
                 System.out.println("INFO: Player with id: " + id + " logged out");
                 GameServer.playerList.remove(this.id);
@@ -79,4 +87,15 @@ public class Player {
         }).start();
     }
 
+    @Override
+    public String toString() {
+        return "Player{" +
+                "socket=" + socket +
+                ", id='" + id + '\'' +
+                ", ipAddress='" + ipAddress + '\'' +
+                ", port=" + port +
+                ", wantsToPlay=" + wantsToPlay +
+                ", currentlyPlaying=" + currentlyPlaying +
+                '}';
+    }
 }

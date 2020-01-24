@@ -9,6 +9,7 @@ import java.util.UUID;
 public class GameServer {
 
     static PlayerList playerList;
+    static GameHandler gameHandler;
     boolean serverStarted = false;
     ServerSocket server = null;
     Socket client = null;
@@ -17,6 +18,7 @@ public class GameServer {
 
     public void initServer(int port) {
         playerList = new PlayerList();
+        gameHandler = new GameHandler(playerList);
         try {
             server = new ServerSocket(port);
             serverStarted = true;

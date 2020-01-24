@@ -5,6 +5,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
@@ -66,9 +67,14 @@ public class Client {
     }
 
     public static void main(String[] args) {
-        String ipAddress = "192.168.0.118";
-        int port = 4444;
+//        replace with ip of the server
+        try {
+            String ipAddress = InetAddress.getLocalHost().getHostAddress();
+            int port = 4444;
 
-        new Client(ipAddress, port);
+            new Client(ipAddress, port);
+        }catch (UnknownHostException e){
+            e.printStackTrace();
+        }
     }
 }
