@@ -5,14 +5,18 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.Optional;
 
 public class Player {
     private Socket socket;
     private String id;
     private String ipAddress;
     private int port;
-    public boolean wantsToPlay = false;
-    public boolean currentlyPlaying = false;
+    public volatile boolean lookingForTheGame = false;
+    public volatile  boolean currentlyPlaying = false;
+    public volatile Duel duel;
+    public volatile String opponentId;
+    public volatile boolean ready = false;
 
     public Player(Socket socket, String id, String ipAddress, int port) {
         this.socket = socket;
@@ -22,36 +26,20 @@ public class Player {
         playerThread();
     }
 
-    public Socket getSocket() {
-        return socket;
-    }
-
-    public void setSocket(Socket socket) {
-        this.socket = socket;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public String getIpAddress() {
         return ipAddress;
     }
 
-    public void setIpAddress(String ipAddress) {
-        this.ipAddress = ipAddress;
+    public Socket getSocket() {
+        return socket;
     }
 
     public int getPort() {
         return port;
     }
 
-    public void setPort(int port) {
-        this.port = port;
+    public String getId() {
+        return id;
     }
 
     private void playerThread(){
@@ -71,12 +59,29 @@ public class Player {
                     }
 
                     if(line.equals("PLAY")){
-                        System.out.println("Player (" + id + ") looking for the game");
-                        wantsToPlay = true;
-                        GameServer.gameHandler.startDuel(this);
+                        lookingForTheGame = true;
+                        System.out.println("INFO: Player (" + id + ") looking for the game");
+                        GameHandler.startDuel(this);
+                        while (!currentlyPlaying){
+                            //wait
+                        }
+                        System.out.println("starting for player " + id);
+                        out.println(opponentId);
+                        ready = true;
+                        while (currentlyPlaying){
+                            //wait
+                        }
+                        ready = false;
+
                     }
                 }
                 System.out.println("INFO: Player with id: " + id + " logged out");
+
+//               Remove duel from search and close sockets
+                Optional<Duel> nDuel = GameHandler.duels.stream().parallel().filter(duel -> !duel.isStarted()).findAny();
+                if(nDuel.isPresent()){
+                    GameHandler.duels.remove(nDuel.get());
+                }
                 GameServer.playerList.remove(this.id);
                 socket.close();
             }catch (SocketException e){
@@ -94,7 +99,6 @@ public class Player {
                 ", id='" + id + '\'' +
                 ", ipAddress='" + ipAddress + '\'' +
                 ", port=" + port +
-                ", wantsToPlay=" + wantsToPlay +
                 ", currentlyPlaying=" + currentlyPlaying +
                 '}';
     }

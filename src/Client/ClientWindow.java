@@ -8,13 +8,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 public class ClientWindow extends JFrame implements ActionListener {
 
     PrintWriter out;
     BufferedReader in;
     String playerId;
-
+    Game game;
 //    GUI elements
     Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
     JPanel mainPanel;
@@ -25,6 +26,35 @@ public class ClientWindow extends JFrame implements ActionListener {
     JButton backButton;
     JTextArea textArea;
     JScrollPane scrollPane;
+    JLabel looking;
+
+    Thread lookingForTheGame = new Thread(()->{
+        try{
+            while (!in.ready()){
+                System.out.println("waiting");
+                looking.setText("Looking for opponent");
+                SwingUtilities.updateComponentTreeUI(this);
+                TimeUnit.MILLISECONDS.sleep(200);
+                looking.setText("Looking for opponent.");
+                SwingUtilities.updateComponentTreeUI(this);
+                TimeUnit.MILLISECONDS.sleep(200);
+                looking.setText("Looking for opponent..");
+                SwingUtilities.updateComponentTreeUI(this);
+                TimeUnit.MILLISECONDS.sleep(200);
+                looking.setText("Looking for opponent..");
+                SwingUtilities.updateComponentTreeUI(this);
+                TimeUnit.MILLISECONDS.sleep(200);
+            }
+
+            String opponentId = in.readLine();
+            System.out.println("Opponent found, ID: " + opponentId);
+            game = new Game(this, opponentId, true);
+            return;
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+    });
 
 
     public ClientWindow(PrintWriter out, BufferedReader in, String playerId) {
@@ -71,6 +101,8 @@ public class ClientWindow extends JFrame implements ActionListener {
         try {
             if (source == playButton) {
                 out.println("PLAY");
+                lookForOpponent();
+
             } else if (source == listButton) {
 
                 out.println("LIST");
@@ -93,15 +125,24 @@ public class ClientWindow extends JFrame implements ActionListener {
 
     private void listAction(String list){
         gamePanel.removeAll();
-        gamePanel.setLayout(new BoxLayout(gamePanel, BoxLayout.PAGE_AXIS));
+        gamePanel.setLayout(new BorderLayout());
 
         textArea.setText(list);
 
         gamePanel.add(backButton, BorderLayout.NORTH);
         gamePanel.add(scrollPane, BorderLayout.CENTER);
+
         SwingUtilities.updateComponentTreeUI(this);
     }
 
+    private void lookForOpponent(){
+        gamePanel.removeAll();
+        gamePanel.setLayout(new BorderLayout());
+        looking = new JLabel("INFO: Looking for opponent");
+        gamePanel.add(looking, BorderLayout.CENTER);
+        SwingUtilities.updateComponentTreeUI(this);
+        lookingForTheGame.start();
+    }
     private void loadMenu(){
 
         gamePanel.removeAll();

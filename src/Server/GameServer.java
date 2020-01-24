@@ -9,7 +9,6 @@ import java.util.UUID;
 public class GameServer {
 
     static PlayerList playerList;
-    static GameHandler gameHandler;
     boolean serverStarted = false;
     ServerSocket server = null;
     Socket client = null;
@@ -18,7 +17,7 @@ public class GameServer {
 
     public void initServer(int port) {
         playerList = new PlayerList();
-        gameHandler = new GameHandler(playerList);
+
         try {
             server = new ServerSocket(port);
             serverStarted = true;
@@ -37,6 +36,7 @@ public class GameServer {
             try {
                 client = server.accept();
                 uniqueID = UUID.randomUUID().toString();
+                System.out.println(client.getLocalPort());
 
                 System.out.println("INFO: New connection, player id: " + uniqueID);
 
@@ -47,7 +47,7 @@ public class GameServer {
                 e.printStackTrace();
             }
 
-            playerList.add(uniqueID, new Player(client,uniqueID,client.getLocalAddress().getHostAddress(), client.getLocalPort()));
+            playerList.add(uniqueID, new Player(client,uniqueID,client.getInetAddress().getHostAddress(), client.getPort()));
         }
     }
 
