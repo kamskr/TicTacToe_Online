@@ -1,7 +1,6 @@
 package Server;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.Socket;
 
 public class Duel implements Runnable{
@@ -57,6 +56,16 @@ public class Duel implements Runnable{
         player1.duel = this;
         player2.duel = this;
 
+        int random = (int)Math.round(Math.random());
+
+        if(random == 0) {
+            player1.starting = true;
+            player2.starting = false;
+        }else{
+            player2.starting = true;
+            player1.starting = false;
+        }
+
         for(int i = 0; i < 9; i++){
             gameState[i] = "";
         }
@@ -77,6 +86,8 @@ public class Duel implements Runnable{
 
     @Override
     public void run() {
+
+
         while(!finished){
 
             if(player1.ready && player2.ready) sendGameState();
@@ -85,16 +96,23 @@ public class Duel implements Runnable{
     }
 
     private void sendGameState(){
-        try(
-                ObjectOutputStream os1 = new ObjectOutputStream(player1Socket.getOutputStream());
-                ObjectOutputStream os2 = new ObjectOutputStream(player2Socket.getOutputStream())
-        ){
-            os1.writeObject(gameState);
-            os1.flush();
-            os2.writeObject(gameState);
-            os2.flush();
+        try{
+            PrintWriter out1 = new PrintWriter(player1.getSocket().getOutputStream(), true);
+            PrintWriter out2 = new PrintWriter(player2.getSocket().getOutputStream(), true);
+            String state ="";
+            for(int i = 0; i < 9; i++){
+                if(i<8) {
+                    state += gameState[i] + ";";
+                }else{
+                    state += gameState[i];
+                }
+            }
 
+            out1.println(state);
+            out2.println(state);
+            System.out.println("sending state: " + state);
         }catch (IOException e){
+            finished = true;
             e.printStackTrace();
         }
     }

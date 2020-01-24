@@ -47,8 +47,13 @@ public class ClientWindow extends JFrame implements ActionListener {
             }
 
             String opponentId = in.readLine();
+
+            while(!in.ready()){}
+
+            boolean starting = Boolean.parseBoolean(in.readLine());
+
             System.out.println("Opponent found, ID: " + opponentId);
-            game = new Game(this, opponentId, true);
+            game = new Game(this, opponentId, starting);
             return;
         }catch (Exception e){
             e.printStackTrace();

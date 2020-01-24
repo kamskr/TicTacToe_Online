@@ -4,14 +4,17 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.io.InputStreamReader;
+import java.util.concurrent.TimeUnit;
 
 public class Game implements ActionListener {
 
     private ClientWindow clientWindow;
     private String opponentId;
-    private boolean starting;
+    private boolean yourTurn;
+    private String xo;
     private String[] gameState;
 //    GUI components
     JButton[] buttons = new JButton[9];
@@ -31,10 +34,11 @@ public class Game implements ActionListener {
     public Game(ClientWindow clientWindow, String opponentId, boolean starting) {
         this.opponentId = opponentId;
         this.clientWindow = clientWindow;
-        this.starting = starting;
+        this.yourTurn = yourTurn;
 
         for(int i = 0; i < 9; i++){
             buttons[i] = new JButton("");
+            buttons[i].setFont(new Font("Arial", Font.PLAIN, 40));
         }
         initGame();
 
@@ -51,7 +55,7 @@ public class Game implements ActionListener {
         clientWindow.gamePanel.add(button7);
         clientWindow.gamePanel.add(button8);
         clientWindow.gamePanel.add(button9);
-        if(starting) {
+        if(yourTurn) {
             turn = new JLabel("Your turn");
         }else {
             turn = new JLabel("Your opponent's turn");
@@ -65,23 +69,27 @@ public class Game implements ActionListener {
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(ActionEvent event) {
+        Object source = event.getSource();
 
+        if(source == buttons[0]){
+            gameState[0] = xo;
+        }
     }
 
     private void updateGameState(){
+        try{
+            while (!clientWindow.in.ready()){
+                System.out.println("INFO: Waiting for current state of the game");
+                TimeUnit.MILLISECONDS.sleep(200);
+            }
+            gameState = clientWindow.in.readLine().split(";");
 
-        try(ObjectInputStream ois = new ObjectInputStream(Client.socket.getInputStream())
-        ){
-            gameState = (String[]) ois.readObject();
-            System.out.println(gameState);
+            System.out.println(gameState.toString());
         }catch (IOException e){
             e.printStackTrace();
-        }catch (ClassNotFoundException e){
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
-
-
     }
 }

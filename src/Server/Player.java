@@ -12,6 +12,7 @@ public class Player {
     private String id;
     private String ipAddress;
     private int port;
+    public volatile boolean starting = false;
     public volatile boolean lookingForTheGame = false;
     public volatile  boolean currentlyPlaying = false;
     public volatile Duel duel;
@@ -67,6 +68,11 @@ public class Player {
                         }
                         System.out.println("starting for player " + id);
                         out.println(opponentId);
+                        if(starting){
+                            out.println("true");
+                        }else{
+                            out.println("false");
+                        }
                         ready = true;
                         while (currentlyPlaying){
                             //wait
