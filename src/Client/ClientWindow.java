@@ -7,7 +7,6 @@ import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 public class ClientWindow extends JFrame implements ActionListener {
@@ -28,38 +27,6 @@ public class ClientWindow extends JFrame implements ActionListener {
     JScrollPane scrollPane;
     JLabel looking;
 
-    Thread lookingForTheGame = new Thread(()->{
-        try{
-            while (!in.ready()){
-                System.out.println("waiting");
-                looking.setText("Looking for opponent");
-                SwingUtilities.updateComponentTreeUI(this);
-                TimeUnit.MILLISECONDS.sleep(200);
-                looking.setText("Looking for opponent.");
-                SwingUtilities.updateComponentTreeUI(this);
-                TimeUnit.MILLISECONDS.sleep(200);
-                looking.setText("Looking for opponent..");
-                SwingUtilities.updateComponentTreeUI(this);
-                TimeUnit.MILLISECONDS.sleep(200);
-                looking.setText("Looking for opponent..");
-                SwingUtilities.updateComponentTreeUI(this);
-                TimeUnit.MILLISECONDS.sleep(200);
-            }
-
-            String opponentId = in.readLine();
-
-            while(!in.ready()){}
-
-            boolean starting = Boolean.parseBoolean(in.readLine());
-
-            System.out.println("Opponent found, ID: " + opponentId);
-            game = new Game(this, opponentId, starting);
-            return;
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
-    });
 
 
     public ClientWindow(PrintWriter out, BufferedReader in, String playerId) {
@@ -121,6 +88,10 @@ public class ClientWindow extends JFrame implements ActionListener {
                 Client.socket.close();
                 System.exit(0);
             } else if (source == backButton){
+                if(game!= null){
+                    mainPanel.remove(game.turnPanel);
+                    game = null;
+                }
                 loadMenu();
             }
         }catch (IOException e){
@@ -146,7 +117,38 @@ public class ClientWindow extends JFrame implements ActionListener {
         looking = new JLabel("INFO: Looking for opponent");
         gamePanel.add(looking, BorderLayout.CENTER);
         SwingUtilities.updateComponentTreeUI(this);
-        lookingForTheGame.start();
+        new Thread(()->{
+            try{
+                while (!in.ready()){
+                    System.out.println("waiting");
+                    looking.setText("Looking for opponent");
+                    SwingUtilities.updateComponentTreeUI(this);
+                    TimeUnit.MILLISECONDS.sleep(200);
+                    looking.setText("Looking for opponent.");
+                    SwingUtilities.updateComponentTreeUI(this);
+                    TimeUnit.MILLISECONDS.sleep(200);
+                    looking.setText("Looking for opponent..");
+                    SwingUtilities.updateComponentTreeUI(this);
+                    TimeUnit.MILLISECONDS.sleep(200);
+                    looking.setText("Looking for opponent..");
+                    SwingUtilities.updateComponentTreeUI(this);
+                    TimeUnit.MILLISECONDS.sleep(200);
+                }
+
+                String opponentId = in.readLine();
+
+                while(!in.ready()){}
+
+                boolean starting = Boolean.parseBoolean(in.readLine());
+
+                System.out.println("Opponent found, ID: " + opponentId);
+                game = new Game(this, opponentId, starting);
+                return;
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+
+        }).start();
     }
     private void loadMenu(){
 

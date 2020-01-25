@@ -118,6 +118,7 @@ public class Duel implements Runnable{
         try {
             System.out.println("INFO: Waiting for the state from players");
             while (!in.ready()) {}
+
             String temp = in.readLine();
             System.out.println(temp);
             gameState = temp.split(";");
