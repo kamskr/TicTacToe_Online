@@ -146,11 +146,12 @@ public class Game implements ActionListener {
         System.out.println(youWon);
         if(youWon){
             turn.setText("You won!");
-
         }else{
             turn.setText("You lost...");
+            clientWindow.out.println("FINISH");
         }
         turnPanel.add(clientWindow.backButton, BorderLayout.SOUTH);
+
 
         SwingUtilities.updateComponentTreeUI(clientWindow);
 

@@ -119,26 +119,28 @@ public class Duel implements Runnable{
             System.out.println("INFO: Waiting for the state from players");
             while (!in.ready()) {}
 
-            String temp = in.readLine();
-            System.out.println(temp);
-            gameState = temp.split(";");
-//            gameState = in.readLine().split(";");
+            String input = in.readLine();
+            System.out.println(input);
+            if (input.equals("FINISH")) finishGame();
+            gameState = input.split(";");
 
         }catch (IOException e){
-            e.printStackTrace();
+            System.out.println("INFO: Player logged out");;
         }
     }
 
     private synchronized void sendGameState(){
 
         String state ="";
-        for(int i = 0; i < 9; i++){
-            if(i<8) {
-                state += gameState[i] + ";";
-            }else{
-                state += gameState[i];
+        if(gameState.length == 1) return;
+            for (int i = 0; i < 9; i++) {
+                if (i < 8) {
+                    state += gameState[i] + ";";
+                } else {
+                    state += gameState[i];
+                }
             }
-        }
+
         System.out.println("INFO: Sending state: " + state);
         out1.println(state);
         out2.println(state);
