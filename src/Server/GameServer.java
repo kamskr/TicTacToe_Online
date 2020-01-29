@@ -1,9 +1,11 @@
 package Server;
 
 import java.io.IOException;
+
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class GameServer {
@@ -12,12 +14,10 @@ public class GameServer {
     boolean serverStarted = false;
     ServerSocket server = null;
     Socket client = null;
-    Scanner in = new Scanner(System.in);
     String uniqueID;
 
     public void initServer(int port) {
         playerList = new PlayerList();
-
         try {
             server = new ServerSocket(port);
             serverStarted = true;
@@ -53,7 +53,7 @@ public class GameServer {
     }
 
     public static void main(String[] args) {
-            new GameServer().initServer(4444);
 
+        new GameServer().initServer(4444);
     }
 }

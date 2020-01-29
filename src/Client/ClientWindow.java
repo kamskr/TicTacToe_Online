@@ -117,6 +117,9 @@ public class ClientWindow extends JFrame implements ActionListener {
         looking = new JLabel("INFO: Looking for opponent");
         gamePanel.add(looking, BorderLayout.CENTER);
         SwingUtilities.updateComponentTreeUI(this);
+
+
+
         new Thread(()->{
             try{
                 while (!in.ready()){
@@ -130,19 +133,22 @@ public class ClientWindow extends JFrame implements ActionListener {
                     looking.setText("Looking for opponent..");
                     SwingUtilities.updateComponentTreeUI(this);
                     TimeUnit.MILLISECONDS.sleep(200);
-                    looking.setText("Looking for opponent..");
+                    looking.setText("Looking for opponent...");
                     SwingUtilities.updateComponentTreeUI(this);
                     TimeUnit.MILLISECONDS.sleep(200);
                 }
 
-                String opponentId = in.readLine();
+                String inputData = in.readLine();
+                String[] inputDataArr = inputData.split(";");
+                String opponentId = inputDataArr[0];
+                int viewerPort = Integer.parseInt(inputDataArr[1]);
 
                 while(!in.ready()){}
 
                 boolean starting = Boolean.parseBoolean(in.readLine());
 
                 System.out.println("Opponent found, ID: " + opponentId);
-                game = new Game(this, opponentId, starting);
+                game = new Game(this, opponentId, starting, viewerPort);
                 return;
             }catch (Exception e){
                 e.printStackTrace();

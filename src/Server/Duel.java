@@ -1,47 +1,42 @@
 package Server;
 
 import java.io.*;
-import java.net.Socket;
+import java.net.DatagramSocket;
+
 
 public class Duel implements Runnable{
     private boolean started = false;
     private Player player1;
     private Player player2;
-    private Socket player1Socket;
-    private Socket player2Socket;
     private String[] gameState = new String[9];
     private volatile boolean finished = false;
     private BufferedReader in1;
     private BufferedReader in2;
     private PrintWriter out1;
     private PrintWriter out2;
+    public int port;
+    private DatagramSocket publisherSocket;
+    private MulticastPublisher publisher;
+
+
 
     public Duel(Player player1,PrintWriter out1,BufferedReader in1) {
         this.player1 = player1;
         this.out1 = out1;
         this.in1 = in1;
+        try {
+            this.publisherSocket = new DatagramSocket();
+            this.port = publisherSocket.getLocalPort();
+            publisherSocket.close();
+            publisher = new MulticastPublisher(this.port);
 
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     public boolean isStarted() {
         return started;
-    }
-
-    public void setStarted(boolean started) {
-        this.started = started;
-    }
-
-    public Player getPlayer1() {
-        return player1;
-    }
-
-    public void setPlayer1(Player player1) {
-        this.player1 = player1;
-    }
-
-    public Player getPlayer2() {
-
-        return player2;
     }
 
     public void setPlayer2(Player player2, PrintWriter out2,BufferedReader in2) {
@@ -56,9 +51,6 @@ public class Duel implements Runnable{
 
         player1.opponentId = player2.getId();
         player2.opponentId = player1.getId();
-
-        player1Socket = player1.getSocket();
-        player2Socket = player2.getSocket();
 
         player1.currentlyPlaying = true;
         player2.currentlyPlaying = true;
@@ -90,7 +82,7 @@ public class Duel implements Runnable{
         player1.duel = null;
         player2.duel = null;
         GameHandler.duels.remove(this);
-        finished = false;
+        finished = true;
     }
 
     @Override
@@ -124,6 +116,7 @@ public class Duel implements Runnable{
             if (input.equals("FINISH")) finishGame();
             gameState = input.split(";");
 
+
         }catch (IOException e){
             System.out.println("INFO: Player logged out");;
         }
@@ -145,6 +138,6 @@ public class Duel implements Runnable{
         out1.println(state);
         out2.println(state);
 
-
+        publisher.broadcast(player1.getId() + "#" + player1.xo + "#" + player2.getId() + "#" + player2.xo + "#"  + state);
     }
 }

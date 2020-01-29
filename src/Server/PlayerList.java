@@ -3,28 +3,24 @@ package Server;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PlayerList {
+class PlayerList {
 
     private Map<String, Player> activePlayers = new HashMap<>();
 
-    public void add(String id, Player player){
+    void add(String id, Player player){
         activePlayers.put(id, player);
     }
 
-    public synchronized void remove(String id){
+    synchronized void remove(String id){
         activePlayers.remove(id);
     }
 
-    public synchronized String listAllActivePlayers(){
-        String list = "Active players: ;";
+    synchronized String listAllActivePlayers(){
+        StringBuilder list = new StringBuilder("Active players: ;");
         for (Map.Entry<String, Player> entry : activePlayers.entrySet()) {
 
-            list += "ID: " + entry.getKey() + " || IP address: " + entry.getValue().getIpAddress() + " || port: " + entry.getValue().getPort() + ";";
+            list.append("ID: ").append(entry.getKey()).append(" || IP address: ").append(entry.getValue().getIpAddress()).append(" || port: ").append(entry.getValue().getPort()).append(";");
         }
-        return list;
-    }
-
-    public Map<String, Player> getActivePlayers() {
-        return activePlayers;
+        return list.toString();
     }
 }

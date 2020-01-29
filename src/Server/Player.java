@@ -13,16 +13,17 @@ public class Player {
     private String id;
     private String ipAddress;
     private int port;
-    public PrintWriter out;
-    public BufferedReader in;
-    public volatile boolean hisTurn = false;
-    public volatile boolean lookingForTheGame = false;
-    public volatile  boolean currentlyPlaying = false;
-    public volatile Duel duel;
-    public volatile String opponentId;
-    public volatile boolean ready = false;
+    PrintWriter out;
+    BufferedReader in;
+    volatile boolean hisTurn = false;
+    volatile boolean lookingForTheGame = false;
+    volatile  boolean currentlyPlaying = false;
+    volatile Duel duel;
+    volatile String opponentId;
+    volatile boolean ready = false;
+    public String xo;
 
-    public Player(Socket socket, String id, String ipAddress, int port) {
+    Player(Socket socket, String id, String ipAddress, int port) {
         this.socket = socket;
         this.id = id;
         this.ipAddress = ipAddress;
@@ -36,19 +37,19 @@ public class Player {
         playerThread();
     }
 
-    public String getIpAddress() {
+    String getIpAddress() {
         return ipAddress;
     }
 
-    public Socket getSocket() {
+    Socket getSocket() {
         return socket;
     }
 
-    public int getPort() {
+    int getPort() {
         return port;
     }
 
-    public String getId() {
+    String getId() {
         return id;
     }
 
@@ -68,16 +69,19 @@ public class Player {
                     if(line.equals("PLAY")){
                         lookingForTheGame = true;
                         System.out.println("INFO: Player (" + id + ") looking for the game");
-                        GameHandler.startDuel(this);
-                        while (!currentlyPlaying){
+                        int viewerPort = GameHandler.startDuel(this);
+                        while (!currentlyPlaying) {
+                            Thread.onSpinWait();
                             //wait
                         }
                         System.out.println("Starting for player " + id);
-                        out.println(opponentId);
+                        out.println(opponentId + ";" + viewerPort);
                         if(hisTurn){
                             out.println("true");
+                            xo = "o";
                         }else{
                             out.println("false");
+                            xo = "x";
                         }
                         ready = true;
                         while (currentlyPlaying){

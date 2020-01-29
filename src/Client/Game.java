@@ -16,16 +16,20 @@ public class Game implements ActionListener {
     private volatile String[] gameState;
     private volatile boolean gameOver = false;
     private volatile boolean firstInit = true;
+    private volatile boolean draw = false;
+    private int viewerPort;
 
 //    GUI components
     JButton[] buttons = new JButton[9];
-    JLabel turn = new JLabel();
+    JTextArea turn;
     JPanel turnPanel;
+    JLabel viewPort = new JLabel();
 
-    public Game(ClientWindow clientWindow, String opponentId, boolean yourTurn) {
+    public Game(ClientWindow clientWindow, String opponentId, boolean yourTurn, int viewerPort) {
         this.opponentId = opponentId;
         this.clientWindow = clientWindow;
         this.yourTurn = yourTurn;
+        this.viewerPort = viewerPort;
         if(yourTurn){
             this.xo = "o";
         }else{
@@ -57,13 +61,15 @@ public class Game implements ActionListener {
         }
 
         if(yourTurn) {
-            turn = new JLabel("Your turn");
+            turn = new JTextArea("Your turn");
         }else {
-            turn = new JLabel("Your opponent's turn");
+            turn = new JTextArea("Your opponent's turn");
         }
+        turn.append("\n\n\n\n\n" + "This game is being broadcasted on port: " + String.valueOf(viewerPort));
         turnPanel = new JPanel();
         turnPanel.setLayout(new BorderLayout());
         turnPanel.add(turn, BorderLayout.CENTER);
+        turnPanel.add(viewPort, BorderLayout.SOUTH);
         clientWindow.mainPanel.add(turnPanel);
         gameLoop();
 
@@ -134,22 +140,36 @@ public class Game implements ActionListener {
         yourTurn = !yourTurn;
         if(yourTurn){
             turn.setText("Your turn");
+            turn.append("\n\n\n\n\n" + "This game is being broadcasted on port: " + String.valueOf(viewerPort));
             SwingUtilities.updateComponentTreeUI(clientWindow);
 
         }else{
             turn.setText("Your opponent's turn");
+            turn.append("\n\n\n\n\n" + "This game is being broadcasted on port: " + String.valueOf(viewerPort));
             SwingUtilities.updateComponentTreeUI(clientWindow);
         }
     }
 
     private synchronized void finishGame(){
-        System.out.println(youWon);
-        if(youWon){
-            turn.setText("You won!");
+        if(!draw) {
+            System.out.println(youWon);
+            if (youWon) {
+                turn.setText("You won!");
+                turn.append("\n\n\n\n\n" + "This game is being broadcasted on port: " + String.valueOf(viewerPort));
+            } else {
+                turn.setText("You lost...");
+                turn.append("\n\n\n\n\n" + "This game is being broadcasted on port: " + String.valueOf(viewerPort));
+                clientWindow.out.println("FINISH");
+            }
         }else{
-            turn.setText("You lost...");
-            clientWindow.out.println("FINISH");
+            System.out.println("Draw");
+            turn.setText("Draw!");
+            turn.append("\n\n\n\n\n" + "This game is being broadcasted on port: " + String.valueOf(viewerPort));
+            if (!yourTurn){
+                clientWindow.out.println("FINISH");
+            }
         }
+
         turnPanel.add(clientWindow.backButton, BorderLayout.SOUTH);
 
 
@@ -213,10 +233,10 @@ public class Game implements ActionListener {
                 youWon = false;
             }
             return true;
-        }else if(gameState[2].equals(gameState[5]) && gameState[5].equals(gameState[7]) && !gameState[2].equals(" ")){
+        }else if(gameState[2].equals(gameState[5]) && gameState[5].equals(gameState[8]) && !gameState[2].equals(" ")){
             buttons[2].setForeground(Color.BLUE);
             buttons[5].setForeground(Color.BLUE);
-            buttons[7].setForeground(Color.BLUE);
+            buttons[8].setForeground(Color.BLUE);
             gameOver = true;
             if(gameState[2].equals(xo)){
                 youWon = true;
@@ -248,8 +268,29 @@ public class Game implements ActionListener {
 
 
             return true;
-        }else {
+        }else if(checkDraw()){
+            gameOver = true;
+            draw = true;
+
+            return true;
+        } else {
             return false;
         }
+    }
+
+    private boolean checkDraw(){
+        boolean gameDrawed = true;
+
+        if(gameState.length != 9){
+            return false;
+        }
+
+        for(String s : gameState){
+            if(s.equals(" ")){
+                gameDrawed = false;
+            }
+        }
+
+        return gameDrawed;
     }
 }
